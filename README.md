@@ -22,7 +22,7 @@ It is recommended to use a virtual environment for better isolation.
 To run the script on Linux enter the command:
 
 ```bash
-$ python main.py --host minechat.dvmn.org --port 5000 --history test
+$ python main.py --host chat_host.org --port 1234 --history history.txt
 ```
 It is possible to get the values of input arguments from environment variables. 
 See `python main.py --help` for details.
