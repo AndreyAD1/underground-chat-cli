@@ -10,7 +10,30 @@ PORT = 5000
 
 
 def get_input_arguments():
-    pass
+    argument_parser = configargparse.get_argument_parser()
+    argument_parser.add(
+        '--host',
+        type=str,
+        required=True,
+        env_var='CHAT_HOST',
+        help='An address of the chat host.'
+    )
+    argument_parser.add(
+        '--port',
+        type=int,
+        required=True,
+        env_var='CHAT_PORT',
+        help='A number of port which the chat server listens.'
+    )
+    argument_parser.add(
+        '--history',
+        type=str,
+        required=True,
+        env_var='HISTORY_FILEPATH',
+        help='A file path where script should output result.'
+    )
+    input_arguments = argument_parser.parse_args()
+    return input_arguments
 
 
 async def write_chat_history(host, port, output_file_path):
@@ -29,11 +52,16 @@ async def write_chat_history(host, port, output_file_path):
         writer.close()
 
 
-async def main():
+def main():
     input_arguments = get_input_arguments()
     chat_host, chat_port = input_arguments.host, input_arguments.port
-    chat_history_file_path = input_arguments.history_file_path
-    asyncio.run(main(chat_host, chat_port, chat_history_file_path))
+    chat_history_file_path = input_arguments.history
+    main_coroutine = write_chat_history(
+        chat_host,
+        chat_port,
+        chat_history_file_path
+    )
+    asyncio.run(main_coroutine)
 
 
 if __name__ == '__main__':
