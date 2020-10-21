@@ -3,7 +3,7 @@ import json
 import logging
 
 
-ACCOUNT_HASH = 'e54a90d6-11d8-11eb-8c47-0242ac110002\n'
+NICK_NAME = 'SCRIPT_BOT'
 logger = logging.getLogger('sender')
 logger.setLevel(logging.DEBUG)
 for handler in logger.handlers:
@@ -15,12 +15,41 @@ console.setFormatter(formatter)
 logger.addHandler(console)
 
 
-async def send_message():
+async def sign_up():
     reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
-    logger.debug(repr(ACCOUNT_HASH))
-    writer.write(ACCOUNT_HASH.encode())
+    writer.write(b'\n')
+    await writer.drain()
+    server_response = await reader.readline()
+    logger.debug(repr(server_response.decode()))
+    message_to_send = f'{NICK_NAME}\n'
+    logger.debug(repr(message_to_send))
+    writer.write(message_to_send.encode())
+    await writer.drain()
+    server_response = await reader.readline()
+    logger.debug(repr(server_response.decode()))
+    user_features = json.loads(server_response)
+    try:
+        user_token = user_features['account_hash']
+    except (AttributeError, KeyError):
+        error_message = 'Не удалось зарегистрировать нового пользователя.'
+        logger.error(error_message)
+        print(error_message)
+        user_token = None
+
+    writer.close()
+    await writer.wait_closed()
+    return user_token
+
+
+async def sign_in(token):
+    reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)
+    server_response = await reader.readline()
+    logger.debug(repr(server_response.decode()))
+    logger.debug(repr(token))
+    writer.write(f'{token}\n'.encode())
+    await writer.drain()
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
     user_features = json.loads(server_response)
@@ -31,11 +60,19 @@ async def send_message():
     logger.debug(repr(server_response.decode()))
     message = 'SPAAAAAM\n'
     writer.write('SPAAAAAM\n'.encode())
+    await writer.drain()
     writer.write(b'\n')
+    await writer.drain()
     logger.debug(repr(message))
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
     writer.close()
+    await writer.wait_closed()
+
+
+async def send_message():
+    token = await sign_up()
+    await sign_in(token)
 
 
 def main():
