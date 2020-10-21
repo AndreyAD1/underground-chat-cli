@@ -15,27 +15,27 @@ console.setFormatter(formatter)
 logger.addHandler(console)
 
 
-async def sign_up():
+async def register():
     reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
+
     writer.write(b'\n')
     await writer.drain()
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
+
     message_to_send = f'{NICK_NAME}\n'
     logger.debug(repr(message_to_send))
     writer.write(message_to_send.encode())
     await writer.drain()
+
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
     user_features = json.loads(server_response)
     try:
         user_token = user_features['account_hash']
     except (AttributeError, KeyError):
-        error_message = 'Не удалось зарегистрировать нового пользователя.'
-        logger.error(error_message)
-        print(error_message)
         user_token = None
 
     writer.close()
@@ -43,8 +43,7 @@ async def sign_up():
     return user_token
 
 
-async def sign_in(token):
-    reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)
+async def authorize(reader, writer, token):
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
     logger.debug(repr(token))
@@ -53,30 +52,43 @@ async def sign_in(token):
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
     user_features = json.loads(server_response)
-    if not user_features:
-        print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
-        return
+    return user_features
+
+
+async def submit_message(reader, writer, message_text):
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
-    message = 'SPAAAAAM\n'
-    writer.write('SPAAAAAM\n'.encode())
+    logger.debug(repr(message_text))
+    writer.write((message_text + '\n').encode())
     await writer.drain()
     writer.write(b'\n')
     await writer.drain()
-    logger.debug(repr(message))
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
+
+
+async def run_client():
+    token = await register()
+    if not token:
+        error_message = 'Не удалось зарегистрировать нового пользователя.'
+        logger.error(error_message)
+        print(error_message)
+        return
+
+    reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)
+    user_features = await authorize(reader, writer, token)
+    if not user_features:
+        print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
+        return
+
+    message = 'SPAAAAAM'
+    await submit_message(reader, writer, message)
     writer.close()
     await writer.wait_closed()
 
 
-async def send_message():
-    token = await sign_up()
-    await sign_in(token)
-
-
 def main():
-    asyncio.run(send_message())
+    asyncio.run(run_client())
 
 
 if __name__ == '__main__':
