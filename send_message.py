@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 
 
@@ -22,6 +23,10 @@ async def send_message():
     writer.write(ACCOUNT_HASH.encode())
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
+    user_features = json.loads(server_response)
+    if not user_features:
+        print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
+        return
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
     message = 'SPAAAAAM\n'
