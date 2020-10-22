@@ -1,9 +1,12 @@
 import asyncio
 import json
 import logging
+import re
 
 
 NICK_NAME = 'SCRIPT_BOT'
+MESSAGE = 'SPAM'
+
 logger = logging.getLogger('sender')
 logger.setLevel(logging.DEBUG)
 for handler in logger.handlers:
@@ -25,7 +28,8 @@ async def register():
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
 
-    message_to_send = f'{NICK_NAME}\n'
+    filtered_nick = re.sub('(\\\+n|\n|\\\+)', '', NICK_NAME)
+    message_to_send = f'{filtered_nick}\n'
     logger.debug(repr(message_to_send))
     writer.write(message_to_send.encode())
     await writer.drain()
@@ -59,7 +63,8 @@ async def submit_message(reader, writer, message_text):
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
     logger.debug(repr(message_text))
-    writer.write((message_text + '\n').encode())
+    filtered_message = re.sub('\n\n', '', message_text)
+    writer.write((filtered_message + '\n').encode())
     await writer.drain()
     writer.write(b'\n')
     await writer.drain()
@@ -81,8 +86,7 @@ async def run_client():
         print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
         return
 
-    message = 'SPAAAAAM'
-    await submit_message(reader, writer, message)
+    await submit_message(reader, writer, MESSAGE)
     writer.close()
     await writer.wait_closed()
 
