@@ -22,7 +22,7 @@ def get_input_arguments():
         '--port',
         type=int,
         required=True,
-        env_var='CHAT_PORT',
+        env_var='READING_PORT',
         help='A number of port which the chat server listens.'
     )
     argument_parser.add(

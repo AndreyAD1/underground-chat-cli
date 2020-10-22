@@ -3,6 +3,8 @@ import json
 import logging
 import re
 
+import configargparse
+
 
 NICK_NAME = 'SCRIPT_BOT'
 MESSAGE = 'SPAM'
@@ -18,8 +20,48 @@ console.setFormatter(formatter)
 logger.addHandler(console)
 
 
-async def register():
-    reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)
+def get_input_arguments():
+    argument_parser = configargparse.get_argument_parser()
+    argument_parser.add(
+        '--host',
+        type=str,
+        default='minechat.dvmn.org',
+        env_var='CHAT_HOST',
+        help='The chat address.'
+    )
+    argument_parser.add(
+        '--port',
+        type=int,
+        default=5050,
+        env_var='WRITING_PORT',
+        help='The number of port the chat server listens.'
+    )
+    argument_parser.add(
+        '--token',
+        type=str,
+        default=None,
+        env_var='USER_TOKEN',
+        help='A user token the client should use to send a message.'
+    )
+    argument_parser.add(
+        '--user_name',
+        type=str,
+        default=None,
+        env_var='USER_NAME',
+        help='The name of new user the client should create.'
+    )
+    argument_parser.add(
+        '--message',
+        type=str,
+        default=None,
+        help='A message the client should send.'
+    )
+    input_arguments = argument_parser.parse_args()
+    return input_arguments
+
+
+async def register(host, port, user_name):
+    reader, writer = await asyncio.open_connection(host,port)
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
 
@@ -28,7 +70,7 @@ async def register():
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
 
-    filtered_nick = re.sub('(\\\+n|\n|\\\+)', '', NICK_NAME)
+    filtered_nick = re.sub('(\\\+n|\n|\\\+)', '', user_name)
     message_to_send = f'{filtered_nick}\n'
     logger.debug(repr(message_to_send))
     writer.write(message_to_send.encode())
@@ -72,27 +114,33 @@ async def submit_message(reader, writer, message_text):
     logger.debug(repr(server_response.decode()))
 
 
-async def run_client():
-    token = await register()
+async def run_client(host, port, token, user_name, message):
     if not token:
-        error_message = 'Не удалось зарегистрировать нового пользователя.'
-        logger.error(error_message)
-        print(error_message)
-        return
+        token = await register(host, port, user_name)
+        if not token:
+            error_message = 'Не удалось зарегистрировать нового пользователя.'
+            logger.error(error_message)
+            print(error_message)
+            return
 
-    reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)
+    reader, writer = await asyncio.open_connection(host, port)
     user_features = await authorize(reader, writer, token)
     if not user_features:
         print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
         return
 
-    await submit_message(reader, writer, MESSAGE)
+    await submit_message(reader, writer, message)
     writer.close()
     await writer.wait_closed()
 
 
 def main():
-    asyncio.run(run_client())
+    input_arguments = get_input_arguments()
+    user_token, user_name = input_arguments.token, input_arguments.user_name
+    chat_host, chat_port = input_arguments.host, input_arguments.port
+    message = input_arguments.message
+    client = run_client(chat_host, chat_port, user_token, user_name, message)
+    asyncio.run(client)
 
 
 if __name__ == '__main__':
