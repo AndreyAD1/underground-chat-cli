@@ -145,10 +145,8 @@ async def run_client(host, port, token, user_name, message):
 
     user_features = await authorize(reader, writer, token)
     if not user_features:
-        print(
-            """Не удалось получить свойства юзера. 
-            Проверьте токен юзера и номер порта сервера."""
-        )
+        print('Не удалось получить свойства юзера.')
+        print('Проверьте токен юзера и номер порта сервера.')
         return
 
     await submit_message(reader, writer, message)
