@@ -28,8 +28,8 @@ A Linux command to run the script sending a message to the chat:
 ```bash
 $ python send_message.py --host chat_host.org --port 1234 --token token --message Hello Everyone! 
 ```
-It is possible to get the values of input arguments from environment variables. 
-See `python main.py --help` for details.
+User can set input arguments as environment variables. 
+See `python main.py --help` for more details.
 
 ## License
 

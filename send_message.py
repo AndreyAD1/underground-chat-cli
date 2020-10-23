@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import re
+import socket
 
 import configargparse
 
@@ -61,7 +62,11 @@ def get_input_arguments():
 
 
 async def register(host, port, user_name):
-    reader, writer = await asyncio.open_connection(host,port)
+    try:
+        reader, writer = await asyncio.open_connection(host, port)
+    except socket.gaierror:
+        logger.error(f'Can not connect to {host}:{port}')
+        return None
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
 
@@ -123,7 +128,14 @@ async def run_client(host, port, token, user_name, message):
             print(error_message)
             return
 
-    reader, writer = await asyncio.open_connection(host, port)
+    try:
+        reader, writer = await asyncio.open_connection(host, port)
+    except socket.gaierror:
+        error_message = f'Can not connect to {host}:{port}'
+        logger.error(error_message)
+        print(error_message)
+        return
+
     user_features = await authorize(reader, writer, token)
     if not user_features:
         print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
