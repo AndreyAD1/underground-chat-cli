@@ -6,9 +6,6 @@ import re
 import configargparse
 
 
-NICK_NAME = 'SCRIPT_BOT'
-MESSAGE = 'SPAM'
-
 logger = logging.getLogger('sender')
 logger.setLevel(logging.DEBUG)
 for handler in logger.handlers:
@@ -39,21 +36,21 @@ def get_input_arguments():
     argument_parser.add(
         '--token',
         type=str,
-        default=None,
+        default='',
         env_var='USER_TOKEN',
         help='A user token the client should use to send a message.'
     )
     argument_parser.add(
         '--user_name',
         type=str,
-        default=None,
+        default='Script Bot',
         env_var='USER_NAME',
         help='The name of new user the client should create.'
     )
     argument_parser.add(
         '--message',
         type=str,
-        default=None,
+        default='Hello everyone!',
         help='A message the client should send.'
     )
     input_arguments = argument_parser.parse_args()
