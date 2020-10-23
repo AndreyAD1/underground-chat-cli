@@ -43,11 +43,11 @@ async def write_chat_history(host, port, output_file_path):
         return
     try:
         while True:
-            received_data = await reader.read(1000)
+            received_data = await reader.readline()
+            message = received_data.decode()
+            formatted_datetime = datetime.now().strftime('%d.%m.%y %H:%M')
+            log_note = f'{formatted_datetime} {message}'
             async with aiofiles.open(output_file_path, 'a') as history_file:
-                message = received_data.decode()
-                formatted_datetime = datetime.now().strftime('%d.%m.%y %H:%M')
-                log_note = f'{formatted_datetime} {message}'
                 await history_file.write(log_note)
     except asyncio.CancelledError:
         raise
