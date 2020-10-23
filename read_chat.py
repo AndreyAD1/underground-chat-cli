@@ -1,12 +1,11 @@
 import asyncio
 from datetime import datetime
+import socket
 
 import aiofiles
 import configargparse
 
-
-HOST = 'minechat.dvmn.org'
-PORT = 5000
+from logger import logger
 
 
 def get_input_arguments():
@@ -37,7 +36,11 @@ def get_input_arguments():
 
 
 async def write_chat_history(host, port, output_file_path):
-    reader, writer = await asyncio.open_connection(host, port)
+    try:
+        reader, writer = await asyncio.open_connection(host, port)
+    except socket.gaierror:
+        logger.error(f'Can not connect to {host}')
+        return
     try:
         while True:
             received_data = await reader.read(1000)
