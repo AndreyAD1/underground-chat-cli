@@ -1,6 +1,6 @@
 # Underground Chat Cli
 
-Asynchronous client saving a web chat history into a file.
+The asynchronous CLI client of the web chat.
 
 ## Project Goal
 This is the educational project created to improve the skills of asynchronous code.
@@ -19,10 +19,14 @@ It is recommended to use a virtual environment for better isolation.
 
 ### Quick Start
 
-To run the script on Linux enter the command:
-
+The repository contains the two independent scripts.
+A Linux command to run the script collecting a chat history:
 ```bash
-$ python main.py --host chat_host.org --port 1234 --history history.txt
+$ python read_chat.py --host chat_host.org --port 1234 --history history.txt
+```
+A Linux command to run the script sending a message to the chat:
+```bash
+$ python send_message.py --host chat_host.org --port 1234 --token token --message Hello Everyone! 
 ```
 It is possible to get the values of input arguments from environment variables. 
 See `python main.py --help` for details.

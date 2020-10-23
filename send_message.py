@@ -38,14 +38,17 @@ def get_input_arguments():
         type=str,
         default='',
         env_var='USER_TOKEN',
-        help='A user token the client should use to send a message.'
+        help='An existed user token the client should use to send a message.'
     )
     argument_parser.add(
         '--user_name',
         type=str,
         default='Script Bot',
         env_var='USER_NAME',
-        help='The name of new user the client should create.'
+        help="""
+        If user do not set the argument '--token', 
+        the script will create a new user having this name.
+        """
     )
     argument_parser.add(
         '--message',
