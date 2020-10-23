@@ -43,9 +43,9 @@ async def write_chat_history(host, port, output_file_path):
         return
     try:
         while True:
+            formatted_datetime = datetime.now().strftime('%d.%m.%y %H:%M')
             received_data = await reader.readline()
             message = received_data.decode()
-            formatted_datetime = datetime.now().strftime('%d.%m.%y %H:%M')
             log_note = f'{formatted_datetime} {message}'
             try:
                 async with aiofiles.open(output_file_path, 'a') as file:
