@@ -19,7 +19,7 @@ It is recommended to use a virtual environment for better isolation.
 
 ### Quick Start
 
-The repository contains the two independent scripts.
+The repository contains two independent scripts.
 A Linux command to run the script collecting a chat history:
 ```bash
 $ python read_chat.py --host chat_host.org --port 1234 --history history.txt
