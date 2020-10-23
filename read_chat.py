@@ -47,8 +47,13 @@ async def write_chat_history(host, port, output_file_path):
             message = received_data.decode()
             formatted_datetime = datetime.now().strftime('%d.%m.%y %H:%M')
             log_note = f'{formatted_datetime} {message}'
-            async with aiofiles.open(output_file_path, 'a') as history_file:
-                await history_file.write(log_note)
+            try:
+                async with aiofiles.open(output_file_path, 'a') as file:
+                    await file.write(log_note)
+            except FileNotFoundError:
+                logger.error(f'Can not write to the file {output_file_path}')
+                writer.close()
+                return
     except asyncio.CancelledError:
         raise
     finally:
