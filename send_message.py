@@ -101,8 +101,15 @@ async def authorize(reader, writer, token):
     writer.write(f'{token}\n'.encode())
     await writer.drain()
     server_response = await reader.readline()
-    logger.debug(repr(server_response.decode()))
-    user_features = json.loads(server_response)
+    decoded_response = server_response.decode()
+    logger.debug(repr(decoded_response))
+    try:
+        user_features = json.loads(server_response)
+    except json.JSONDecodeError:
+        logger.error(
+            f'Can not parse to JSON the server response: {decoded_response}.'
+        )
+        user_features = None
     return user_features
 
 
@@ -138,7 +145,10 @@ async def run_client(host, port, token, user_name, message):
 
     user_features = await authorize(reader, writer, token)
     if not user_features:
-        print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
+        print(
+            """Не удалось получить свойства юзера. 
+            Проверьте токен юзера и номер порта сервера."""
+        )
         return
 
     await submit_message(reader, writer, message)
