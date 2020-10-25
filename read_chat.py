@@ -13,21 +13,21 @@ def get_input_arguments():
     argument_parser.add(
         '--host',
         type=str,
-        required=True,
+        default='minechat.dvmn.org',
         env_var='CHAT_HOST',
         help='An address of the chat host.'
     )
     argument_parser.add(
         '--port',
         type=int,
-        required=True,
+        default=5000,
         env_var='READING_PORT',
         help='A number of port which the chat server listens.'
     )
     argument_parser.add(
         '--history',
         type=str,
-        required=True,
+        default='chat_history.txt',
         env_var='HISTORY_FILEPATH',
         help='A file path where script should output result.'
     )

@@ -28,9 +28,9 @@ A Linux command to run the script sending a message to the chat:
 ```bash
 $ python send_message.py --host chat_host.org --port 1234 --token token --message Hello Everyone! 
 ```
-User can set input arguments as environment variables. 
-See `python main.py --help` for more details.
+A user can set the input arguments as environment variables. 
+See `python read_chat.py --help` or `python send_message.py --help` for more details.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
