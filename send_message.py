@@ -65,7 +65,7 @@ async def register(host, port, user_name):
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
 
-    filtered_nick = re.sub('(\\\+n|\n|\\\+)', '', user_name)
+    filtered_nick = re.sub(r'(\\+n|\n|\\+)', '', user_name)
     message_to_send = f'{filtered_nick}\n'
     logger.debug(repr(message_to_send))
     writer.write(message_to_send.encode())
@@ -107,7 +107,7 @@ async def submit_message(reader, writer, message_text):
     server_response = await reader.readline()
     logger.debug(repr(server_response.decode()))
     logger.debug(repr(message_text))
-    filtered_message = re.sub('\n\n', '', message_text)
+    filtered_message = re.sub(r'\n\n', '', message_text)
     writer.write((filtered_message + '\n').encode())
     await writer.drain()
     writer.write(b'\n')
