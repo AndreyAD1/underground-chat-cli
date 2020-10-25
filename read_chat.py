@@ -52,10 +52,7 @@ async def write_chat_history(host, port, output_file_path):
                     await file.write(log_note)
             except FileNotFoundError:
                 logger.error(f'Can not write to the file {output_file_path}')
-                writer.close()
                 return
-    except asyncio.CancelledError:
-        raise
     finally:
         writer.close()
 
