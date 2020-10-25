@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+from itertools import count
 import socket
 
 import aiofiles
@@ -36,11 +37,14 @@ def get_input_arguments():
 
 
 async def write_chat_history(host, port, output_file_path):
-    try:
-        reader, writer = await asyncio.open_connection(host, port)
-    except socket.gaierror:
-        logger.error(f'Can not connect to {host}')
-        return
+    for attempt_number in count():
+        try:
+            reader, writer = await asyncio.open_connection(host, port)
+            break
+        except socket.gaierror:
+            logger.error(f'Can not connect to {host}')
+            if attempt_number > 2:
+                await asyncio.sleep(1)
     try:
         while True:
             formatted_datetime = datetime.now().strftime('%d.%m.%y %H:%M')
