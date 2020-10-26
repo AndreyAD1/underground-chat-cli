@@ -1,11 +1,11 @@
 import asyncio
 import json
 import re
-import socket
 
 import configargparse
 
 from logger import logger
+from open_connection import open_connection
 
 
 def get_input_arguments():
@@ -52,35 +52,29 @@ def get_input_arguments():
 
 
 async def register(host, port, user_name):
-    try:
-        reader, writer = await asyncio.open_connection(host, port)
-    except socket.gaierror:
-        logger.error(f'Can not connect to {host}:{port}')
-        return None
-    server_response = await reader.readline()
-    logger.debug(repr(server_response.decode()))
+    async with open_connection(host, port) as (reader, writer):
+        server_response = await reader.readline()
+        logger.debug(repr(server_response.decode()))
 
-    writer.write(b'\n')
-    await writer.drain()
-    server_response = await reader.readline()
-    logger.debug(repr(server_response.decode()))
+        writer.write(b'\n')
+        await writer.drain()
+        server_response = await reader.readline()
+        logger.debug(repr(server_response.decode()))
 
-    filtered_nick = re.sub(r'(\\+n|\n|\\+)', '', user_name)
-    message_to_send = f'{filtered_nick}\n'
-    logger.debug(repr(message_to_send))
-    writer.write(message_to_send.encode())
-    await writer.drain()
+        filtered_nick = re.sub(r'(\\+n|\n|\\+)', '', user_name)
+        message_to_send = f'{filtered_nick}\n'
+        logger.debug(repr(message_to_send))
+        writer.write(message_to_send.encode())
+        await writer.drain()
 
-    server_response = await reader.readline()
-    logger.debug(repr(server_response.decode()))
-    user_features = json.loads(server_response)
-    try:
-        user_token = user_features['account_hash']
-    except (AttributeError, KeyError):
-        user_token = None
+        server_response = await reader.readline()
+        logger.debug(repr(server_response.decode()))
+        user_features = json.loads(server_response)
+        try:
+            user_token = user_features['account_hash']
+        except (AttributeError, KeyError):
+            user_token = None
 
-    writer.close()
-    await writer.wait_closed()
     return user_token
 
 
@@ -125,23 +119,14 @@ async def run_client(host, port, token, user_name, message):
             print(error_message)
             return
 
-    try:
-        reader, writer = await asyncio.open_connection(host, port)
-    except socket.gaierror:
-        error_message = f'Can not connect to {host}:{port}'
-        logger.error(error_message)
-        print(error_message)
-        return
+    async with open_connection(host, port) as (reader, writer):
+        user_features = await authorize(reader, writer, token)
+        if not user_features:
+            print('Не удалось получить свойства юзера.')
+            print('Проверьте токен юзера и номер порта сервера.')
+            return
 
-    user_features = await authorize(reader, writer, token)
-    if not user_features:
-        print('Не удалось получить свойства юзера.')
-        print('Проверьте токен юзера и номер порта сервера.')
-        return
-
-    await submit_message(reader, writer, message)
-    writer.close()
-    await writer.wait_closed()
+        await submit_message(reader, writer, message)
 
 
 def main():
