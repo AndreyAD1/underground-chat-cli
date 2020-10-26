@@ -17,6 +17,7 @@ async def open_connection(host, port):
             if attempt_number > 2:
                 await asyncio.sleep(1)
     try:
+        logger.debug(f'Establish a connection with {host}')
         yield reader, writer
     finally:
         writer.close()
